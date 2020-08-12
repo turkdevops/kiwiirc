@@ -1,5 +1,7 @@
-# Kiwi IRC
-
+# TurkDevOps KiwiIRC
+# [![Visit our IRC channel](https://kiwiirc.com/buttons/irc.kiwiirc.com/TurkDevOps.png)](https://kiwiirc.com/client/irc.kiwiirc.com/#TurkDevOps) <=Tıkla
+Canlı sohbet kanalımıza katılın 
+---
 ***A versatile web based messenger using IRC***
 
 
