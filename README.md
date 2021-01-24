@@ -1,4 +1,7 @@
 ### #TurkDevOps KiwiIRC
+
+<a  href = "https://scan.coverity.com/projects/turkdevops-kiwiirc"> <img alt = " Coverity Tarama Yapı Durum " src = " https://scan.coverity.com/projects/22529/badge .svg " /> </a>
+  
 # Bize IRC'de Ulaşın
 [![Visit our IRC channel](https://kiwiirc.com/buttons/irc.kiwiirc.com/TurkDevOps.png)](https://kiwiirc.com/client/irc.kiwiirc.com/#TurkDevOps)
 ---
