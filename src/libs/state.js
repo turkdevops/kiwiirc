@@ -47,8 +47,8 @@ const userDict = new Vue({
     },
     /*
 (network id): {
-  (lowercase nick): UserState,
-  (lowercase nick): UserState,
+(lowercase nick): UserState,
+(lowercase nick): UserState,
 },
 */
 });
@@ -61,8 +61,8 @@ const bufferDict = new Vue({
     },
     /*
 (network id): [
-  BufferState,
-  BufferState,
+BufferState,
+BufferState,
 ]
 */
 });
@@ -71,12 +71,12 @@ const bufferDict = new Vue({
 // reactive. Saves CPU.
 const messages = [
     /* {
-  networkid: 1,
-  buffer: '#kiwiirc',
-  messages: [
-      Message,
-      Message
-  ],
+networkid: 1,
+buffer: '#kiwiirc',
+messages: [
+    Message,
+    Message
+],
 }, */
 ];
 
