@@ -46,11 +46,11 @@ const userDict = new Vue({
         };
     },
     /*
-  (network id): {
-      (lowercase nick): UserState,
-      (lowercase nick): UserState,
-  },
-  */
+(network id): {
+    (lowercase nick): UserState,
+    (lowercase nick): UserState,
+},
+*/
 });
 
 const bufferDict = new Vue({
@@ -60,24 +60,24 @@ const bufferDict = new Vue({
         };
     },
     /*
-  (network id): [
-      BufferState,
-      BufferState,
-  ]
-  */
+(network id): [
+    BufferState,
+    BufferState,
+]
+*/
 });
 
 // Messages are seperate from the above state object to keep them from being
 // reactive. Saves CPU.
 const messages = [
     /* {
-      networkid: 1,
-      buffer: '#kiwiirc',
-      messages: [
-          Message,
-          Message
-      ],
-  }, */
+    networkid: 1,
+    buffer: '#kiwiirc',
+    messages: [
+        Message,
+        Message
+    ],
+}, */
 ];
 
 const availableStartups = Object.create(null);
