@@ -15,7 +15,7 @@
         "gendocs": "rm -rf srcdocs/ && jsdoc -c jsdoc.json"
     },
     "dependencies": {
-        "@babel/runtime-corejs3": "^7.9.2",
+        "@babel/runtime-corejs3": "^7.12.5",
         "@panter/vue-i18next": "^0.15.2",
         "compare-versions": "^3.6.0",
         "css-vars-ponyfill": "^2.2.1",
