@@ -6,51 +6,54 @@
  * Plays alert sounds
  */
 export class AudioManager {
-  constructor(audio) {
-    this.lastPlayed = 0;
-    this.audio = audio;
-  }
-
-  /** Play the alert sound */
-  play() {
-    // Only play the bleep once every 2 seconds
-    if (!this.lastPlayed || Date.now() - this.lastPlayed > 2000) {
-      this.audio.play();
-      this.lastPlayed = Date.now();
+    constructor(audio) {
+        this.lastPlayed = 0;
+        this.audio = audio;
     }
-  }
 
-  listen(state) {
-    state.$on("audio.bleep", () => { this.play(); });
-  }
+    /** Play the alert sound */
+    play() {
+        // Only play the bleep once every 2 seconds
+        if (!this.lastPlayed || Date.now() - this.lastPlayed > 2000) {
+            this.audio.play();
+            this.lastPlayed = Date.now();
+        }
+    }
 
-  /** Watch the Kiwi state for any message highlights and play an alert */
-  watchForMessages(state) {
-    state.$on("message.new", (event) => {
-      let {message, buffer} = event;
-      if (buffer.setting("mute_sound")) {
-        return;
-      }
+    listen(state) {
+        state.$on("audio.bleep", () => {
+            this.play();
+        });
+    }
 
-      let ignoreTypes = [ "connection", "traffic", "mode", "nick" ];
-      if (ignoreTypes.indexOf(message.type) > -1) {
-        return;
-      }
+    /** Watch the Kiwi state for any message highlights and play an alert */
+    watchForMessages(state) {
+        state.$on("message.new", (event) => {
+            let { message, buffer } = event;
+            if (buffer.setting("mute_sound")) {
+                return;
+            }
 
-      if (message.ignore || buffer.isSpecial()) {
-        return;
-      }
+            let ignoreTypes = ["connection", "traffic", "mode", "nick"];
+            if (ignoreTypes.indexOf(message.type) > -1) {
+                return;
+            }
 
-      let shouldBleep = buffer.getNetwork().nick !== message.nick &&
-                        ((message.isHighlight &&
-                          buffer.setting("alert_on") === "highlight") ||
-                         buffer.setting("alert_on") === "message");
-      let isActiveBuffer = state.getActiveBuffer() === buffer;
-      let inFocus = isActiveBuffer && state.ui.app_has_focus;
+            if (message.ignore || buffer.isSpecial()) {
+                return;
+            }
 
-      if (shouldBleep || (buffer.isQuery() && !inFocus)) {
-        this.play();
-      }
-    });
-  }
+            let shouldBleep =
+                buffer.getNetwork().nick !== message.nick &&
+                ((message.isHighlight &&
+                    buffer.setting("alert_on") === "highlight") ||
+                    buffer.setting("alert_on") === "message");
+            let isActiveBuffer = state.getActiveBuffer() === buffer;
+            let inFocus = isActiveBuffer && state.ui.app_has_focus;
+
+            if (shouldBleep || (buffer.isQuery() && !inFocus)) {
+                this.play();
+            }
+        });
+    }
 }

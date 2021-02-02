@@ -1,10 +1,10 @@
 "kiwi public";
 
-import {trim} from "lodash";
+import { trim } from "lodash";
 
 import state from "@/libs/state";
-import formatIrcMessage, {createNewBlock} from "@/libs/MessageFormatter";
-import {urlRegex, channelRegex} from "@/helpers/TextFormatting";
+import formatIrcMessage, { createNewBlock } from "@/libs/MessageFormatter";
+import { urlRegex, channelRegex } from "@/helpers/TextFormatting";
 
 /**
  * Receives a message, parses its irc blocks, and then finds urls, users,
@@ -19,16 +19,20 @@ import {urlRegex, channelRegex} from "@/helpers/TextFormatting";
  * @returns An array of blocks, where each special content will be extracted
  *     into a separate block.
  */
-export default function parseMessage(message, formatOpts = {},
-                                     userList = null) {
-  const emojiList = state.setting("emojis");
+export default function parseMessage(
+    message,
+    formatOpts = {},
+    userList = null
+) {
+    const emojiList = state.setting("emojis");
 
-  const blocks = formatIrcMessage(message, formatOpts);
-  let formatedBlocks = blocks.reduce(
-      (acc, block, i) => acc.concat(processBlock(block, userList, emojiList)),
-      []);
+    const blocks = formatIrcMessage(message, formatOpts);
+    let formatedBlocks = blocks.reduce(
+        (acc, block, i) => acc.concat(processBlock(block, userList, emojiList)),
+        []
+    );
 
-  return formatedBlocks;
+    return formatedBlocks;
 }
 
 /**
@@ -42,46 +46,53 @@ export default function parseMessage(message, formatOpts = {},
  *     into a separate block.
  */
 function processBlock(block, userList, emojiList) {
-  const wordsRegex = /\S+/g;
+    const wordsRegex = /\S+/g;
 
-  let wordMatch;
-  let word;
-  const specialMatches = [];
-  // Array containing the special matches. Each `specialMatch` is an object
-  // with:
-  // {
-  //    index: <index of the match>
-  //    match: <match, i.e. the text that will be extracted into a new block>
-  //    block: <the block that will replace the match>
-  // }
+    let wordMatch;
+    let word;
+    const specialMatches = [];
+    // Array containing the special matches. Each `specialMatch` is an object
+    // with:
+    // {
+    //    index: <index of the match>
+    //    match: <match, i.e. the text that will be extracted into a new block>
+    //    block: <the block that will replace the match>
+    // }
 
-  // eslint-disable-next-line no-cond-assign
-  while ((wordMatch = wordsRegex.exec(block.content)) !== null) {
-    // `wordMatch` is an array with the match and the index of the match. We
-    // need that so we can re-construct the original message.
+    // eslint-disable-next-line no-cond-assign
+    while ((wordMatch = wordsRegex.exec(block.content)) !== null) {
+        // `wordMatch` is an array with the match and the index of the match. We
+        // need that so we can re-construct the original message.
 
-    word = wordMatch[0];
+        word = wordMatch[0];
 
-    const match = matchChannel(word) || matchUrl(word) ||
-                  matchUser(word, userList) || matchEmoji(word, emojiList);
+        const match =
+            matchChannel(word) ||
+            matchUrl(word) ||
+            matchUser(word, userList) ||
+            matchEmoji(word, emojiList);
 
-    if (match) {
-      specialMatches.push({
-        index : wordMatch.index + match.index,
-        match : match.match,
-        block :
-            createNewBlock(match.match, block.styles, match.type, match.meta),
-      });
+        if (match) {
+            specialMatches.push({
+                index: wordMatch.index + match.index,
+                match: match.match,
+                block: createNewBlock(
+                    match.match,
+                    block.styles,
+                    match.type,
+                    match.meta
+                ),
+            });
+        }
     }
-  }
 
-  // if there are no special matches, return the original block as is.
-  if (specialMatches.length === 0) {
-    return [ block ];
-  }
+    // if there are no special matches, return the original block as is.
+    if (specialMatches.length === 0) {
+        return [block];
+    }
 
-  // split block with special matches.
-  return mergeMatches(block, specialMatches);
+    // split block with special matches.
+    return mergeMatches(block, specialMatches);
 }
 
 /**
@@ -91,21 +102,21 @@ function processBlock(block, userList, emojiList) {
  *     block.
  */
 function matchChannel(word) {
-  const channelMatch = channelRegex.exec(word);
-  // matches the groups (spaces before)(prefix)(channel)(suffix punctuation)
+    const channelMatch = channelRegex.exec(word);
+    // matches the groups (spaces before)(prefix)(channel)(suffix punctuation)
 
-  if (channelMatch === null) {
-    return false;
-  }
+    if (channelMatch === null) {
+        return false;
+    }
 
-  return {
-    index : channelMatch[1].length + channelMatch[2].length,
-    match : channelMatch[3],
-    type : "channel",
-    meta : {
-      channel : channelMatch[3],
-    },
-  };
+    return {
+        index: channelMatch[1].length + channelMatch[2].length,
+        match: channelMatch[3],
+        type: "channel",
+        meta: {
+            channel: channelMatch[3],
+        },
+    };
 }
 
 /**
@@ -116,42 +127,42 @@ function matchChannel(word) {
  * url match itself, and the new url text to be placed where the first url was.
  */
 function matchUrl(word) {
-  const urlMatch = urlRegex.exec(word);
+    const urlMatch = urlRegex.exec(word);
 
-  if (urlMatch === null) {
-    return false;
-  }
+    if (urlMatch === null) {
+        return false;
+    }
 
-  let url = urlMatch[0];
+    let url = urlMatch[0];
 
-  // Don't allow javascript execution
-  if (url.match(/^javascript:/i)) {
-    return false;
-  }
+    // Don't allow javascript execution
+    if (url.match(/^javascript:/i)) {
+        return false;
+    }
 
-  // Links almost always contain an opening bracket if the last character is a
-  // closing bracket and should be part of the URL. If there isn't an opening
-  // bracket but the URL ends in a closing bracket, consider the closing bracket
-  // as punctuation outside of the URL.
-  if (url.indexOf("(") === -1 && url[url.length - 1] === ")") {
-    url = url.substr(0, url.length - 1);
-  }
+    // Links almost always contain an opening bracket if the last character is a
+    // closing bracket and should be part of the URL. If there isn't an opening
+    // bracket but the URL ends in a closing bracket, consider the closing bracket
+    // as punctuation outside of the URL.
+    if (url.indexOf("(") === -1 && url[url.length - 1] === ")") {
+        url = url.substr(0, url.length - 1);
+    }
 
-  // Add the http if no protocol was found
-  let urlText = url;
-  if (urlText.match(/^www\./i)) {
-    urlText = "http://" + url;
-  }
+    // Add the http if no protocol was found
+    let urlText = url;
+    if (urlText.match(/^www\./i)) {
+        urlText = "http://" + url;
+    }
 
-  return {
-    index : urlMatch.index,
-    match : url,
-    matchText : urlText,
-    type : "url",
-    meta : {
-      url : urlText,
-    },
-  };
+    return {
+        index: urlMatch.index,
+        match: url,
+        matchText: urlText,
+        type: "url",
+        meta: {
+            url: urlText,
+        },
+    };
 }
 
 /**
@@ -162,34 +173,34 @@ function matchUrl(word) {
  * user match itself, and the user colour.
  */
 function matchUser(word, userList) {
-  if (!userList) {
-    return false;
-  }
+    if (!userList) {
+        return false;
+    }
 
-  let user = null;
-  let punc = ",.!:;-+)]?¿\\/<>@";
-  let hasProp = Object.prototype.hasOwnProperty;
-  let nickIdx = 0;
+    let user = null;
+    let punc = ",.!:;-+)]?¿\\/<>@";
+    let hasProp = Object.prototype.hasOwnProperty;
+    let nickIdx = 0;
 
-  const trimWord = trim(word, punc);
-  let normWord = trimWord.toLowerCase();
+    const trimWord = trim(word, punc);
+    let normWord = trimWord.toLowerCase();
 
-  if (hasProp.call(userList, normWord)) {
-    user = userList[normWord];
-    nickIdx = word.indexOf(trimWord);
-  } else {
-    return false;
-  }
+    if (hasProp.call(userList, normWord)) {
+        user = userList[normWord];
+        nickIdx = word.indexOf(trimWord);
+    } else {
+        return false;
+    }
 
-  return {
-    index : nickIdx,
-    match : trimWord,
-    type : "user",
-    meta : {
-      user : trimWord,
-      colour : user.colour,
-    },
-  };
+    return {
+        index: nickIdx,
+        match: trimWord,
+        type: "user",
+        meta: {
+            user: trimWord,
+            colour: user.colour,
+        },
+    };
 }
 
 /**
@@ -200,18 +211,18 @@ function matchUser(word, userList) {
  * emoji match itself, and the emoji code.
  */
 function matchEmoji(word, emojiList) {
-  if (emojiList.hasOwnProperty && !emojiList.hasOwnProperty(word)) {
-    return false;
-  }
+    if (emojiList.hasOwnProperty && !emojiList.hasOwnProperty(word)) {
+        return false;
+    }
 
-  return {
-    index : 0,
-    match : word,
-    type : "emoji",
-    meta : {
-      emoji : emojiList[word],
-    },
-  };
+    return {
+        index: 0,
+        match: word,
+        type: "emoji",
+        meta: {
+            emoji: emojiList[word],
+        },
+    };
 }
 
 /**
@@ -223,36 +234,38 @@ function matchEmoji(word, emojiList) {
  *     into a separate block.
  */
 function mergeMatches(block, specialMatches) {
-  const resultBlocks = [];
-  let lastProcessedIndex = 0;
+    const resultBlocks = [];
+    let lastProcessedIndex = 0;
 
-  // for each special content, creat a block with the text up to the match, and
-  // a block with the special content itself.
-  specialMatches.forEach((specialMatch, index) => {
-    const beforeMatchContent = block.content.substr(
-        lastProcessedIndex, specialMatch.index - lastProcessedIndex);
+    // for each special content, creat a block with the text up to the match, and
+    // a block with the special content itself.
+    specialMatches.forEach((specialMatch, index) => {
+        const beforeMatchContent = block.content.substr(
+            lastProcessedIndex,
+            specialMatch.index - lastProcessedIndex
+        );
 
-    if (beforeMatchContent) {
-      resultBlocks.push({
-        content : beforeMatchContent,
-        styles : {...block.styles},
-        containsContent : !!beforeMatchContent,
-      });
+        if (beforeMatchContent) {
+            resultBlocks.push({
+                content: beforeMatchContent,
+                styles: { ...block.styles },
+                containsContent: !!beforeMatchContent,
+            });
+        }
+
+        resultBlocks.push(specialMatch.block);
+
+        lastProcessedIndex = specialMatch.index + specialMatch.match.length;
+    });
+
+    // remaining content after the last special content.
+    if (lastProcessedIndex < block.content.length) {
+        resultBlocks.push({
+            content: block.content.substr(lastProcessedIndex),
+            styles: { ...block.styles },
+            containsContent: !!block.content.substr(lastProcessedIndex),
+        });
     }
 
-    resultBlocks.push(specialMatch.block);
-
-    lastProcessedIndex = specialMatch.index + specialMatch.match.length;
-  });
-
-  // remaining content after the last special content.
-  if (lastProcessedIndex < block.content.length) {
-    resultBlocks.push({
-      content : block.content.substr(lastProcessedIndex),
-      styles : {...block.styles},
-      containsContent : !!block.content.substr(lastProcessedIndex),
-    });
-  }
-
-  return resultBlocks;
+    return resultBlocks;
 }
