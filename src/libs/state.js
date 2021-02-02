@@ -74,8 +74,8 @@ const messages = [
 networkid: 1,
 buffer: '#kiwiirc',
 messages: [
-    Message,
-    Message
+  Message,
+  Message
 ],
 }, */
 ];
